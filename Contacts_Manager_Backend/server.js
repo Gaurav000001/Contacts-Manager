@@ -16,6 +16,7 @@ payloads and makes the parsed data available on the `req.body` property of the r
 allows the application to handle JSON data sent in the request body easily. */
 app.use(express.json());
 app.use("/api/contacts", require("./routes/contactRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
 
 /* `app.use(errorHandler);` is setting up error handling middleware in the Express application. This
 middleware function is used to handle errors that occur during the processing of incoming requests.

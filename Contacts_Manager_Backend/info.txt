@@ -11,3 +11,7 @@ add "start": "node server.js", "dev": "nodemon server.js" in scripts at package.
 5. (npm express-async-handler) to handle the exceptions without using try-catch
 
 6. (npm install mongoose) to perform database related tasks like creating schema, performing CRUD operations, etc.
+
+7. (npm install bcrypt) for security and password hashing
+
+8. (npm install jsonwebtoken) to install jwt

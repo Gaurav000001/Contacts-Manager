@@ -18,7 +18,7 @@ const isIdValid = asyncHandler(
 /*
     @desc get all contacts
     @route GET api/contacts/
-    @access Public
+    @access Private
 */
 // [important] : whenever we interact with the mondodb using mongoose it returns an promise inorder to deal with
 // an promise we need to make use of anync functions but when we make use of async we need to use try-catch block
@@ -26,7 +26,7 @@ const isIdValid = asyncHandler(
 // when exception occurs express-async-handler just simply gonna pass those exceptions to our errorHandler
 const getContacts = asyncHandler(
     async (request, response) => {
-        const contacts = await Contact.find();
+        const contacts = await Contact.find({ user_id: request.user.id });
         response.status(200).json(contacts);
     }
 );
@@ -34,7 +34,7 @@ const getContacts = asyncHandler(
 /*
     @desc get contact
     @route GET api/contacts/{id}
-    @access Public
+    @access Private
 */
 const getContact = asyncHandler(
     async (request, response) => {
@@ -48,6 +48,11 @@ const getContact = asyncHandler(
             response.status(404);
             throw new Error("Contact not found");
         }
+        // make sure user owns contact
+        if(contact.user_id.toString() !== request.user.id.toString()){
+            response.status(403);
+            throw new Error("Not authorized to view this contact");
+        }
 
         response.status(200).json(contact);
     }
@@ -56,19 +61,21 @@ const getContact = asyncHandler(
 /*
     @desc create contact
     @route POST api/contacts/
-    @access Public
+    @access Private
 */
 const createContact = asyncHandler(
     async (request, response) => {
-        const {name, email} = request.body;
-        if(!name || !email){
+        const {name, email, phone} = request.body;
+        if(!name || !email || !phone){
             response.status(400);
             throw new Error('All fields are mandatory!');
         }
 
         const contact = await Contact.create({
+            user_id: request.user.id,
             name, 
             email,
+            phone
         })
         response.status(201).json(contact);
     }
@@ -77,7 +84,7 @@ const createContact = asyncHandler(
 /*
     @desc update contact
     @route PUT api/contacts/{id}
-    @access Public
+    @access Private
 */
 const updateContact = asyncHandler(
     async (request, response) => {
@@ -90,6 +97,11 @@ const updateContact = asyncHandler(
         if(!contact){
             response.status(404);
             throw new Error("Contact not found");
+        }
+        // make sure user owns contact
+        if(contact.user_id.toString() !== request.user.id.toString()){
+            response.status(403);
+            throw new Error("Not authorized to update this contact");
         }
         
         const updatedContact = await Contact.findByIdAndUpdate(
@@ -105,7 +117,7 @@ const updateContact = asyncHandler(
 /*
     @desc delete contact
     @route DELETE api/contacts/{id}
-    @access Public
+    @access Private
 */
 const deleteContact = asyncHandler(
     async (request, response) => {
@@ -117,6 +129,11 @@ const deleteContact = asyncHandler(
         if(!contact){
             response.status(404);
             throw new Error("Contact not found");
+        }
+        // make sure user owns contact
+        if(contact.user_id.toString() !== request.user.id.toString()){
+            response.status(403);
+            throw new Error("Not authorized to delete this contact");
         }
 
         const deletedContact = await Contact.findByIdAndDelete(id);
